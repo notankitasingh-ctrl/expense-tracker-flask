@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        /* 📱 Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            input, select, button {
+                width: 100%;
+            }
+
+            .charts {
+                flex-direction: column;
+            }
+        }
+
+        .charts {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        canvas {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <h3>Welcome, {{ username }}</h3>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <h1>Expense Dashboard</h1>
+
+    <!-- SEARCH -->
+    <form method="GET">
+        <input type="text" name="search" placeholder="Search expense">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- FILTER -->
+    <form method="GET">
+        <select name="category">
+            <option value="All">All</option>
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Other">Other</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- TOTAL -->
+    <div class="card">
+        💰 Total Expense: ₹{{ total }}
+    </div>
+
+    <!-- ADD -->
+    <form action="/add" method="POST">
+        <input type="text" name="name" placeholder="Expense Name" required>
+        <input type="number" name="amount" placeholder="Amount" required>
+
+        <select name="category" required>
+            <option value="">Select Category</option>
+            <option>Food</option>
+            <option>Travel</option>
+            <option>Shopping</option>
+            <option>Other</option>
+        </select>
+
+        <button type="submit">Add Expense</button>
+    </form>
+
+    <!-- 📊 CHARTS -->
+    <h3>📊 Analytics</h3>
+
+    <div class="charts">
+        <canvas id="pieChart"></canvas>
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <!-- LIST -->
+    <ul>
+        {% for exp in expenses %}
+        <li>
+            <span>
+                <strong>{{ exp[1] }}</strong><br>
+                ₹{{ exp[2] }} • {{ exp[3] }}<br>
+                <small>{{ exp[4] }}</small>
+            </span>
+            <span>
+                <a href="/edit/{{ exp[0] }}">✏️</a>
+                <a href="/delete/{{ exp[0] }}">❌</a>
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+<!-- Chart JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // PIE CHART (category)
+    new Chart(document.getElementById('pieChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ labels | tojson }},
+            datasets: [{
+                data: {{ values | tojson }}
+            }]
+        }
+    });
+
+    // BAR CHART (monthly)
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ months | tojson }},
+            datasets: [{
+                label: "Monthly Spending",
+                data: {{ month_values | tojson }}
+            }]
+        }
+    });
+</script>
+
+</body>
+</html>
